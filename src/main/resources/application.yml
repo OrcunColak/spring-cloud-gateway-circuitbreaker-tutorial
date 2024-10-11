@@ -1,0 +1,27 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: books-service
+          uri: http://localhost:8080 # Your downstream service
+          predicates:
+            - Path=/api/books/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: booksCircuitBreaker
+                fallbackUri: forward:/fallback
+
+resilience4j.circuitbreaker:
+  instances:
+    booksCircuitBreaker:
+      # Define circuit breaker settings
+      slidingWindowSize: 3
+      slidingWindowType: COUNT_BASED
+      failureRateThreshold: 50
+      waitDurationInOpenState: 3s
+      permittedNumberOfCallsInHalfOpenState: 1
+      
+      # Specifies the minimum number of requests that must be made before the circuit breaker starts evaluating the failure rate.
+      # In this case, it waits for at least 3 calls before deciding whether to open the circuit.
+      minimum-number-of-calls: 3
